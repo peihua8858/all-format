@@ -31,7 +31,7 @@ public class TranslateBalloonBuilder implements BalloonBuilder {
 
     private final JComponent myContent;
 
-    private Color myBorder = IdeTooltipManager.getInstance().getBorderColor(true);
+    private Color myBorder =  JBUI.CurrentTheme.Tooltip.borderColor() ;//IdeTooltipManager.getInstance().getBorderColor(true);
     @Nullable
     private Insets myBorderInsets = null;
     private Color myFill = MessageType.INFO.getPopupBackground();
