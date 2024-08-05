@@ -5,7 +5,7 @@
     <version>1.4.0</version>
 
 <!--    <depends>com.intellij.modules.java</depends>-->
-
+    <depends>com.intellij.modules.androidstudio</depends>
     <description>
         <![CDATA[
         AllFormat is a full-featured formatting plug-in that allows developers to format any data. It is easy to read software, Chinese and English translation, etc. It will continue to update and add new features.

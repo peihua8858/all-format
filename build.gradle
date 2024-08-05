@@ -38,7 +38,7 @@ plugins {
 apply plugin: 'kotlin'
 apply plugin: 'org.jetbrains.intellij'
 intellij {
-    version = '2023.2'  //debug version
+    version = '2024.1'  //debug version
 }
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 group 'com.damoguyansi'

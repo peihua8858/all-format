@@ -1,5 +1,6 @@
 package com.damoguyansi.all.format.ui;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONUtil;
 import com.damoguyansi.all.format.cache.CacheName;
@@ -402,7 +403,7 @@ public class NewDialog extends JFrame {
             jsonText.setText(resStr);
         } catch (Exception e) {
             resStr = MapFormat.format(text);
-            msgLabel.setText("map format!");
+            msgLabel.setText("map format!," + e.getMessage());
             jsonText.setText(resStr);
         }
         jsonText.setCaretPosition(0);
@@ -414,8 +415,18 @@ public class NewDialog extends JFrame {
         if (null == text || "".equals(text)) {
             return;
         }
-        jsonText.setText(JSONUtil.parse(text).toString());
-        msgLabel.setText("json compress!");
+        try {
+            jsonText.setText(JSONUtil.parse(text).toString());
+            msgLabel.setText("json compress!");
+        } catch (Exception e) {
+            String result = text.replaceAll("\\n", "")
+                    .replaceAll("\\t", "")
+                    .replace("\\n","")
+                    .replace("\\t","")
+                    .replace(Constant.PER_SPACE,"");
+            jsonText.setText(StrUtil.trim(result));
+            msgLabel.setText("map compress!," + e.getMessage());
+        }
     }
 
     private void xmlOK() {
@@ -642,7 +653,7 @@ public class NewDialog extends JFrame {
         RSyntaxTextArea area = new RSyntaxTextArea();
         area.setDocument(new MaxLengthDocument(5000000));
         if (JSON.equalsIgnoreCase(type)) {
-            area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT);
+            area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
         } else if (XML.equalsIgnoreCase(type)) {
             area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
         } else if (HTML.equalsIgnoreCase(type)) {
