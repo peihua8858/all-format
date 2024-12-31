@@ -12,6 +12,10 @@ import com.damoguyansi.all.format.translate.baidu.BDTransApiUtil;
 import com.damoguyansi.all.format.translate.bean.GTResult;
 import com.damoguyansi.all.format.util.*;
 import com.google.common.io.BaseEncoding;
+import com.intellij.json.JsonLanguage;
+import com.intellij.lang.Language;
+import com.intellij.openapi.project.Project;
+import com.intellij.ui.LanguageTextField;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
@@ -76,10 +80,11 @@ public class NewDialog extends JFrame {
     private ParamCache pc;
 
     private TextPanelMouseListener tpml = null;
+    private Project mProject;
 
-    public NewDialog(boolean isDarcula) {
+    public NewDialog(Project project, boolean isDarcula) {
         this.isDarcula = isDarcula;
-
+        this.mProject = project;
         pc = new ParamCache();
 
         setContentPane(contentPane);
@@ -118,18 +123,18 @@ public class NewDialog extends JFrame {
 
         createRSyntaxTextArea();
 
-        if (true == isDarcula) {
+        if (isDarcula) {
             tabbedPane1.setForeground(new Color(213, 212, 212));
         }
     }
 
     private void showMainDia() {
-        this.setSize(800, 432);
+        this.setSize(800, 800);
         this.setLocationRelativeTo(null);
         this.setTitle("AllFormat (damoguyansi@163.com)");
         this.initCacheParam();
         this.setVisible(true);
-        this.setMinimumSize(new Dimension(700, 410));
+        this.setMinimumSize(new Dimension(700, 700));
 
         jsonText.requestFocus();
         jsonText.grabFocus();
@@ -137,7 +142,7 @@ public class NewDialog extends JFrame {
 
     private void initCacheParam() {
         Boolean onTopPar = pc.readAsBoolean(CacheName.ON_TOP);
-        if (null == onTopPar || true == onTopPar) {
+        if (null == onTopPar || onTopPar) {
             this.topCheckBox.setSelected(true);
             this.setAlwaysOnTop(true);
         } else {
@@ -146,7 +151,7 @@ public class NewDialog extends JFrame {
         }
 
         Boolean newLinePar = pc.readAsBoolean(CacheName.NEW_LINE);
-        if (null != newLinePar && true == newLinePar) {
+        if (null != newLinePar && newLinePar) {
             this.newLineCheckBox.setSelected(true);
         } else {
             this.newLineCheckBox.setSelected(false);
@@ -162,7 +167,7 @@ public class NewDialog extends JFrame {
 
     private void setClipboardContent() {//http://weasdfasdfa.sdfadsf.com
         String clipText = ClipboardUtil.getSysClipboardText();
-        if (null == clipText || "".equals(clipText)) {
+        if (null == clipText || clipText.isEmpty()) {
             try {
                 tabbedPane1.setSelectedIndex(4);
                 ClipboardUtil.pasteClipboardContent(qrcodeText);
@@ -391,7 +396,7 @@ public class NewDialog extends JFrame {
 
     private void jsonOK() {
         String text = jsonText.getText();
-        if (null == text || "".equals(text)) {
+        if (null == text || text.isEmpty()) {
             return;
         }
 
@@ -412,7 +417,7 @@ public class NewDialog extends JFrame {
     private void jsonCompress() {
         jsonOK();
         String text = jsonText.getText();
-        if (null == text || "".equals(text)) {
+        if (null == text || text.isEmpty()) {
             return;
         }
         try {
@@ -421,9 +426,9 @@ public class NewDialog extends JFrame {
         } catch (Exception e) {
             String result = text.replaceAll("\\n", "")
                     .replaceAll("\\t", "")
-                    .replace("\\n","")
-                    .replace("\\t","")
-                    .replace(Constant.PER_SPACE,"");
+                    .replace("\\n", "")
+                    .replace("\\t", "")
+                    .replace(Constant.PER_SPACE, "");
             jsonText.setText(StrUtil.trim(result));
             msgLabel.setText("map compress!," + e.getMessage());
         }
@@ -505,7 +510,7 @@ public class NewDialog extends JFrame {
 
     private void decodeQrcode() {
         try {
-            String results = "";
+            StringBuilder results = new StringBuilder();
             for (int i = 0; i < qrcodeText.getDocument().getLength(); i++) {
                 Element elem = ((StyledDocument) qrcodeText.getDocument()).getCharacterElement(i);
                 AttributeSet as = elem.getAttributes();
@@ -513,16 +518,16 @@ public class NewDialog extends JFrame {
                     if (StyleConstants.getComponent(as) instanceof JLabel) {
                         ImageLabel myLabel = (ImageLabel) StyleConstants.getComponent(as);
                         ImageIcon imageIcon = myLabel.getImageIcon();
-                        results += QrCodeCreateUtil.decode(imageIcon.getImage()) + "\r\n";
+                        results.append(QrCodeCreateUtil.decode(imageIcon.getImage())).append("\r\n");
                     }
                 }
             }
-            if (null == results || "".equals(results)) {
+            if ("".contentEquals(results)) {
                 msgLabel.setText("未解析到图片内容");
                 msgLabel.setToolTipText(msgLabel.getText());
             } else {
                 qrcodeText.setCaretPosition(qrcodeText.getStyledDocument().getLength());
-                qrcodeText.setText(results);
+                qrcodeText.setText(results.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -612,7 +617,7 @@ public class NewDialog extends JFrame {
 
     private void trans() {
         String text = tranInText.getText();
-        if (null == text || "".equals(text.trim())) {
+        if (null == text || text.trim().isEmpty()) {
             return;
         }
         Matcher m = TranslateUtil.p.matcher(text.trim());
@@ -650,6 +655,7 @@ public class NewDialog extends JFrame {
     }
 
     private RSyntaxTextArea createArea(String type) {
+        LanguageTextField textField = new LanguageTextField(Language.findInstance(JsonLanguage.class),mProject,"");
         RSyntaxTextArea area = new RSyntaxTextArea();
         area.setDocument(new MaxLengthDocument(5000000));
         if (JSON.equalsIgnoreCase(type)) {
@@ -664,7 +670,7 @@ public class NewDialog extends JFrame {
         area.setCodeFoldingEnabled(true);
         area.setAntiAliasingEnabled(true);
         area.setAutoscrolls(true);
-        if (true == isDarcula) {
+        if (isDarcula) {
             try {
                 Theme theme = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/dark.xml"));
                 theme.apply(area);

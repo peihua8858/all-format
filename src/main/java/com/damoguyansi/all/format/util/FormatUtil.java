@@ -10,7 +10,7 @@ import cn.hutool.json.JSONUtil;
  */
 public class FormatUtil {
     public static String format(String json) {
-        json = json.replaceAll("\\\\\"", "\"");
+//        json = json.replaceAll("\\\\\"", "\"");
         return JSONUtil.toJsonPrettyStr(json);
     }
 }
