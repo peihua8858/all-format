@@ -1,21 +1,16 @@
-package com.damoguyansi.all.format.ui;
+package com.damoguyansi.all.format.component;
 
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSONUtil;
 import com.damoguyansi.all.format.cache.CacheName;
 import com.damoguyansi.all.format.cache.ParamCache;
-import com.damoguyansi.all.format.component.HexConvertPanel;
-import com.damoguyansi.all.format.component.ImageLabel;
+import com.damoguyansi.all.format.constant.Constants;
 import com.damoguyansi.all.format.event.TextPanelMouseListener;
-import com.damoguyansi.all.format.translate.baidu.BDTransApiUtil;
-import com.damoguyansi.all.format.translate.bean.GTResult;
+import com.damoguyansi.all.format.translate.TransApiFactory;
+import com.damoguyansi.all.format.translate.bean.ApiCode;
+import com.damoguyansi.all.format.translate.bean.TransResult;
 import com.damoguyansi.all.format.util.*;
 import com.google.common.io.BaseEncoding;
-import com.intellij.json.JsonLanguage;
-import com.intellij.lang.Language;
-import com.intellij.openapi.project.Project;
-import com.intellij.ui.LanguageTextField;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
@@ -31,8 +26,7 @@ import java.net.URI;
 import java.util.Locale;
 import java.util.regex.Matcher;
 
-public class NewDialog extends JFrame {
-    private final static String CODE_GITHUB_URL = "https://github.com/damoguyansi/all-format";
+public class OldTranslateDialog extends JFrame {
     private JTabbedPane tabbedPane1;
     private JPanel contentPane;
     private JButton exeBtn;
@@ -80,11 +74,10 @@ public class NewDialog extends JFrame {
     private ParamCache pc;
 
     private TextPanelMouseListener tpml = null;
-    private Project mProject;
 
-    public NewDialog(Project project, boolean isDarcula) {
+    public OldTranslateDialog(boolean isDarcula) {
         this.isDarcula = isDarcula;
-        this.mProject = project;
+
         pc = new ParamCache();
 
         setContentPane(contentPane);
@@ -123,18 +116,22 @@ public class NewDialog extends JFrame {
 
         createRSyntaxTextArea();
 
-        if (isDarcula) {
+        if (true == isDarcula) {
             tabbedPane1.setForeground(new Color(213, 212, 212));
+            Color backgroundColor = Color.DARK_GRAY;
+
+            // 设置 JFrame 背景颜色
+            this.getContentPane().setBackground(backgroundColor);
         }
     }
 
     private void showMainDia() {
-        this.setSize(800, 800);
+        this.setSize(820, 410);
         this.setLocationRelativeTo(null);
         this.setTitle("AllFormat (damoguyansi@163.com)");
         this.initCacheParam();
         this.setVisible(true);
-        this.setMinimumSize(new Dimension(700, 700));
+//        this.setMinimumSize(new Dimension(700, 410));
 
         jsonText.requestFocus();
         jsonText.grabFocus();
@@ -142,7 +139,7 @@ public class NewDialog extends JFrame {
 
     private void initCacheParam() {
         Boolean onTopPar = pc.readAsBoolean(CacheName.ON_TOP);
-        if (null == onTopPar || onTopPar) {
+        if (null == onTopPar || true == onTopPar) {
             this.topCheckBox.setSelected(true);
             this.setAlwaysOnTop(true);
         } else {
@@ -151,7 +148,7 @@ public class NewDialog extends JFrame {
         }
 
         Boolean newLinePar = pc.readAsBoolean(CacheName.NEW_LINE);
-        if (null != newLinePar && newLinePar) {
+        if (null != newLinePar && true == newLinePar) {
             this.newLineCheckBox.setSelected(true);
         } else {
             this.newLineCheckBox.setSelected(false);
@@ -167,7 +164,7 @@ public class NewDialog extends JFrame {
 
     private void setClipboardContent() {//http://weasdfasdfa.sdfadsf.com
         String clipText = ClipboardUtil.getSysClipboardText();
-        if (null == clipText || clipText.isEmpty()) {
+        if (null == clipText || "".equals(clipText)) {
             try {
                 tabbedPane1.setSelectedIndex(4);
                 ClipboardUtil.pasteClipboardContent(qrcodeText);
@@ -328,7 +325,7 @@ public class NewDialog extends JFrame {
                     public void run() {
                         try {
                             Desktop desktop = Desktop.getDesktop();
-                            desktop.browse(new URI(CODE_GITHUB_URL));
+                            desktop.browse(new URI(Constants.CODE_GITHUB_URL));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -396,7 +393,7 @@ public class NewDialog extends JFrame {
 
     private void jsonOK() {
         String text = jsonText.getText();
-        if (null == text || text.isEmpty()) {
+        if (null == text || "".equals(text)) {
             return;
         }
 
@@ -408,7 +405,7 @@ public class NewDialog extends JFrame {
             jsonText.setText(resStr);
         } catch (Exception e) {
             resStr = MapFormat.format(text);
-            msgLabel.setText("map format!," + e.getMessage());
+            msgLabel.setText("map format!");
             jsonText.setText(resStr);
         }
         jsonText.setCaretPosition(0);
@@ -417,21 +414,11 @@ public class NewDialog extends JFrame {
     private void jsonCompress() {
         jsonOK();
         String text = jsonText.getText();
-        if (null == text || text.isEmpty()) {
+        if (null == text || "".equals(text)) {
             return;
         }
-        try {
-            jsonText.setText(JSONUtil.parse(text).toString());
-            msgLabel.setText("json compress!");
-        } catch (Exception e) {
-            String result = text.replaceAll("\\n", "")
-                    .replaceAll("\\t", "")
-                    .replace("\\n", "")
-                    .replace("\\t", "")
-                    .replace(Constant.PER_SPACE, "");
-            jsonText.setText(StrUtil.trim(result));
-            msgLabel.setText("map compress!," + e.getMessage());
-        }
+        jsonText.setText(JSONUtil.parse(text).toString());
+        msgLabel.setText("json compress!");
     }
 
     private void xmlOK() {
@@ -510,7 +497,7 @@ public class NewDialog extends JFrame {
 
     private void decodeQrcode() {
         try {
-            StringBuilder results = new StringBuilder();
+            String results = "";
             for (int i = 0; i < qrcodeText.getDocument().getLength(); i++) {
                 Element elem = ((StyledDocument) qrcodeText.getDocument()).getCharacterElement(i);
                 AttributeSet as = elem.getAttributes();
@@ -518,16 +505,16 @@ public class NewDialog extends JFrame {
                     if (StyleConstants.getComponent(as) instanceof JLabel) {
                         ImageLabel myLabel = (ImageLabel) StyleConstants.getComponent(as);
                         ImageIcon imageIcon = myLabel.getImageIcon();
-                        results.append(QrCodeCreateUtil.decode(imageIcon.getImage())).append("\r\n");
+                        results += QrCodeCreateUtil.decode(imageIcon.getImage()) + "\r\n";
                     }
                 }
             }
-            if ("".contentEquals(results)) {
+            if (null == results || "".equals(results)) {
                 msgLabel.setText("未解析到图片内容");
                 msgLabel.setToolTipText(msgLabel.getText());
             } else {
                 qrcodeText.setCaretPosition(qrcodeText.getStyledDocument().getLength());
-                qrcodeText.setText(results.toString());
+                qrcodeText.setText(results);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -617,13 +604,13 @@ public class NewDialog extends JFrame {
 
     private void trans() {
         String text = tranInText.getText();
-        if (null == text || text.trim().isEmpty()) {
+        if (null == text || "".equals(text.trim())) {
             return;
         }
         Matcher m = TranslateUtil.p.matcher(text.trim());
         String translateType = m.find() ? TranslateUtil.ZH_CN_TO_EN : TranslateUtil.EN_TO_ZH_CN;
         try {
-            GTResult result = BDTransApiUtil.translate(text, translateType);
+            TransResult result = TransApiFactory.createApi(ApiCode.BAIDU).translate(text, translateType);
 
             tranOutText.setText(null == result ? "未知翻译" : result.getSentences().get(0).getTrans());
         } catch (Exception e) {
@@ -655,11 +642,10 @@ public class NewDialog extends JFrame {
     }
 
     private RSyntaxTextArea createArea(String type) {
-        LanguageTextField textField = new LanguageTextField(Language.findInstance(JsonLanguage.class),mProject,"");
         RSyntaxTextArea area = new RSyntaxTextArea();
         area.setDocument(new MaxLengthDocument(5000000));
         if (JSON.equalsIgnoreCase(type)) {
-            area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+            area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT);
         } else if (XML.equalsIgnoreCase(type)) {
             area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
         } else if (HTML.equalsIgnoreCase(type)) {
@@ -670,7 +656,7 @@ public class NewDialog extends JFrame {
         area.setCodeFoldingEnabled(true);
         area.setAntiAliasingEnabled(true);
         area.setAutoscrolls(true);
-        if (isDarcula) {
+        if (true == isDarcula) {
             try {
                 Theme theme = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/dark.xml"));
                 theme.apply(area);

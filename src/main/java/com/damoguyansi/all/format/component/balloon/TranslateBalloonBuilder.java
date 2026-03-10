@@ -1,6 +1,6 @@
-package com.damoguyansi.all.format.translate.component;
+package com.damoguyansi.all.format.component.balloon;
 
-import com.intellij.ide.IdeTooltipManager;
+import com.damoguyansi.all.format.util.ColorUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.popup.Balloon;
@@ -9,9 +9,7 @@ import com.intellij.openapi.ui.popup.JBPopupListener;
 import com.intellij.openapi.ui.popup.LightweightWindowEvent;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.BalloonImpl;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.JBUI;
-import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,9 +19,10 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 public class TranslateBalloonBuilder implements BalloonBuilder {
-    private static final Map<Disposable, List<Balloon>> DEFAULT_STORAGE = ContainerUtil.createWeakMap();
+    private static final Map<Disposable, List<Balloon>> DEFAULT_STORAGE = new WeakHashMap<>();
     @Nullable
     private final Map<Disposable, List<Balloon>> myStorage;
     @Nullable
@@ -31,7 +30,7 @@ public class TranslateBalloonBuilder implements BalloonBuilder {
 
     private final JComponent myContent;
 
-    private Color myBorder =  JBUI.CurrentTheme.Tooltip.borderColor() ;//IdeTooltipManager.getInstance().getBorderColor(true);
+    private Color myBorder = UIManager.getColor("ToolTip.border");
     @Nullable
     private Insets myBorderInsets = null;
     private Color myFill = MessageType.INFO.getPopupBackground();
@@ -55,7 +54,7 @@ public class TranslateBalloonBuilder implements BalloonBuilder {
     private boolean myDialogMode;
     private String myTitle;
     private Insets myContentInsets = JBUI.insets(2);
-    private boolean myShadow = UIUtil.isUnderDarcula();
+    private boolean myShadow = ColorUtil.isDarcula();
     private boolean mySmallVariant = false;
 
     private Balloon.Layer myLayer;
@@ -72,7 +71,9 @@ public class TranslateBalloonBuilder implements BalloonBuilder {
     public TranslateBalloonBuilder(@Nullable Map<Disposable, List<Balloon>> storage, @NotNull final JComponent content) {
         myStorage = storage;
         myContent = content;
-        if (UIUtil.isClientPropertyTrue(myContent, BalloonImpl.FORCED_NO_SHADOW)) {
+
+        Object value = myContent.getClientProperty(BalloonImpl.FORCED_NO_SHADOW);
+        if (Boolean.TRUE.equals(value)) {
             myShadow = false;
         }
     }

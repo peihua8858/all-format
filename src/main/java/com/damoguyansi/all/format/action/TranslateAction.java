@@ -1,13 +1,15 @@
-package com.damoguyansi.all.format.translate.action;
+package com.damoguyansi.all.format.action;
 
-import com.damoguyansi.all.format.translate.bean.GTResult;
-import com.damoguyansi.all.format.translate.component.BalloonManager;
-import com.damoguyansi.all.format.translate.component.TranslateBalloon;
-import com.damoguyansi.all.format.translate.thread.TranslateBalloonThread;
+import cn.hutool.core.util.StrUtil;
+import com.damoguyansi.all.format.component.balloon.BalloonManager;
+import com.damoguyansi.all.format.component.balloon.TranslateBalloon;
+import com.damoguyansi.all.format.translate.bean.TransResult;
+import com.damoguyansi.all.format.translate.TranslateBalloonThread;
 import com.damoguyansi.all.format.util.NoticeUtil;
 import com.damoguyansi.all.format.util.TranslateUtil;
 import com.damoguyansi.all.format.util.WordUtil;
 import com.intellij.codeInsight.editorActions.SelectWordUtil;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -20,7 +22,6 @@ import com.intellij.openapi.ui.popup.BalloonBuilder;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.util.ui.JBUI;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -29,15 +30,21 @@ import java.util.List;
 import java.util.regex.Matcher;
 
 /**
- * Google翻译
+ * 翻译
  *
  * @author damoguyansi
  */
-public class GoogleTranslateAction extends AnAction {
+public class TranslateAction extends AnAction {
 
     public static Editor editor;
     public static Project project;
     public static SelectionModel selectionModel;
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT; // 选择后台线程，适合翻译请求
+        // 或 return ActionUpdateThread.EDT; // 如果只涉及 UI 更新
+    }
 
     @Override
     public void update(AnActionEvent e) {
@@ -59,10 +66,10 @@ public class GoogleTranslateAction extends AnAction {
             selectionModel = editor.getSelectionModel();
             String selectedText = selectionModel.getSelectedText();
 
-            if (StringUtils.isEmpty(selectedText)) {
+            if (StrUtil.isEmpty(selectedText)) {
                 selectedText = getSelectText();
             }
-            if (StringUtils.isEmpty(selectedText)) {
+            if (StrUtil.isEmpty(selectedText)) {
                 return;
             }
             NoticeUtil.init(this.getClass().getSimpleName(), 1);
@@ -98,13 +105,9 @@ public class GoogleTranslateAction extends AnAction {
         TranslateBalloon translateBalloon = new TranslateBalloon(selectText, translateType);
         Balloon balloon = translateBalloon.createBalloon();
 
-        ApplicationManager.getApplication().invokeLater((Runnable) new Runnable() {
-            @Override
-            public void run() {
-                balloon.show(factory.guessBestPopupLocation(editor), Balloon.Position.below);
-            }
+        ApplicationManager.getApplication().invokeLater(() -> {
+            balloon.show(factory.guessBestPopupLocation(editor), Balloon.Position.below);
         });
-
         TranslateBalloonThread tbt = new TranslateBalloonThread(translateBalloon);
         tbt.start();
     }
@@ -115,7 +118,7 @@ public class GoogleTranslateAction extends AnAction {
      * @param result
      * @param translateType
      */
-    protected void showPopupBalloon(GTResult result, String translateType) {
+    protected void showPopupBalloon(TransResult result, String translateType) {
         ApplicationManager.getApplication().invokeLater((Runnable) new Runnable() {
             @Override
             public void run() {

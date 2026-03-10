@@ -1,6 +1,7 @@
 package com.damoguyansi.all.format.util;
 
-import com.intellij.util.ui.UIUtil;
+import com.intellij.ide.ui.LafManager;
+import com.intellij.ui.JBColor;
 
 import java.awt.*;
 
@@ -16,8 +17,12 @@ public class ColorUtil {
     private static final String ENTRY_COLOR_DARCULA = "#D6D60F";
     private static final String ENTRY_TRANS_COLOR_DARCULA = "#FFC66D";
 
+    public static boolean isDarcula() {
+        return !JBColor.isBright();
+    }
+
     public static String transColor() {
-        if (UIUtil.isUnderDarcula())
+        if (isDarcula())
             return TRANS_COLOR_DARCULA;
         else {
             return TRANS_COLOR;
@@ -25,21 +30,21 @@ public class ColorUtil {
     }
 
     public static String posColor() {
-        if (UIUtil.isUnderDarcula())
+        if (isDarcula())
             return POS_COLOR_DARCULA;
         else
             return POS_COLOR;
     }
 
     public static String entryColor() {
-        if (UIUtil.isUnderDarcula())
+        if (isDarcula())
             return ENTRY_COLOR_DARCULA;
         else
             return ENTRY_COLOR;
     }
 
     public static String entryTransColor() {
-        if (UIUtil.isUnderDarcula())
+        if (isDarcula())
             return ENTRY_TRANS_COLOR_DARCULA;
         else
             return ENTRY_TRANS_COLOR;

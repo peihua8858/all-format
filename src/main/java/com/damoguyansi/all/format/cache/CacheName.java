@@ -1,3 +1,4 @@
+
 package com.damoguyansi.all.format.cache;
 
 public enum CacheName {

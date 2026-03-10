@@ -1,10 +1,11 @@
 package com.damoguyansi.all.format;
 
-import com.damoguyansi.all.format.ui.NewDialog;
+import com.damoguyansi.all.format.dialog.TranslateDialog;
+import com.damoguyansi.all.format.util.ColorUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.ui.UIUtil;
+import com.intellij.ui.JBColor;
 
 public class FormatAction extends AnAction {
     public FormatAction() {
@@ -12,7 +13,9 @@ public class FormatAction extends AnAction {
     }
 
     public void actionPerformed(AnActionEvent e) {
-      Project project= getEventProject(e);
-        NewDialog dialog = new NewDialog(project,UIUtil.isUnderDarcula());
+        Project project = e.getProject();
+        if (project == null) return;
+
+        TranslateDialog dialog = new TranslateDialog(ColorUtil.isDarcula());
     }
 }
